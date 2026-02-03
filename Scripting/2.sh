@@ -6,9 +6,14 @@ if [ ! -f "$1" ]; then
     exit 1
 fi
 
-echo "Zipping the log file $1"
-zip "$1.zip" "$1" >/dev/null 2>$1
-cat /dev/null $1
+# echo "Zipping the log file $1"
+# zip "$1.zip" "$1" >/dev/null 2>$1
+# cat /dev/null $1
+# touch "$1"
+
+echo " zipping the log file $1"
+zip "$1.$(date +%s).zip" "$1" >/dev/null 2>&1
+cat /dev/null > "$1"
 touch "$1"
 
 

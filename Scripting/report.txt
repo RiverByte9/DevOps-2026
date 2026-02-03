@@ -1,0 +1,7 @@
+System Monitor Report
+=====================
+Uptime: 
+Load Average: 
+Memory Usage: 
+Disk Usage (/workspaces): 
+CPU Info: 
