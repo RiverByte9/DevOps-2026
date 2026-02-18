@@ -4,23 +4,23 @@
 
 ---
 
-# 📋 Table of Contents
+## 📋 Table of Contents
 
-- Overview
-- Phase 1: Launch EC2 Infrastructure
-- Phase 2: Install and Configure NGINX
-- Phase 3: Host Custom Website
-- Phase 4: Connect Domain
-- Phase 5: Enable SSL with Certbot
-- Important Files
-- Common Commands
-- Troubleshooting
-- Cleanup
-- Final Architecture
+- [Overview](#-overview)
+- [Phase 1: Launch EC2 Infrastructure](#-phase-1--launch-ec2-infrastructure)
+- [Phase 2: Install and Configure NGINX](#-phase-2--install-nginx)
+- [Phase 3: Host Custom Website](#-phase-3--host-your-custom-website)
+- [Phase 4: Connect Domain](#-phase-4--connect-domain-required-for-ssl)
+- [Phase 5: Enable SSL with Certbot](#-phase-5--enable-ssl-with-certbot)
+- [Important Files](#-important-files)
+- [Common Commands](#-common-nginx-commands)
+- [Troubleshooting](#-troubleshooting)
+- [Cleanup](#-cleanup-avoid-aws-charges)
+- [Final Architecture](#-final-architecture)
 
 ---
 
-# 🌟 Overview
+## 🌟 Overview
 
 This guide walks you through:
 
@@ -30,263 +30,314 @@ This guide walks you through:
 - Connecting a domain
 - Securing your site with HTTPS (Certbot SSL)
 
-By the end, you'll have a production-ready web server running securely on AWS.
+By the end, you'll have a **production-ready web server** running securely on AWS.
 
 ---
 
-# 📌 Phase 1 — Launch EC2 Infrastructure
+## 📌 Phase 1 — Launch EC2 Infrastructure
 
-## Step 1️⃣ Launch EC2 Instance
+### Step 1️⃣ Launch EC2 Instance
 
-Go to:
+Go to: **AWS Console → EC2 → Launch Instance**
 
-AWS Console → EC2 → Launch Instance
+**Configuration:**
 
+| Setting | Value |
+|---------|-------|
+| AMI | Amazon Linux 2 |
+| Instance Type | t2.micro (Free tier) |
+| Key Pair | Create or select existing |
+| Storage | 8 GB (default) |
 
-### Configuration
-
-- **AMI:** Amazon Linux 2
-- **Instance Type:** t2.micro (Free tier)
-- **Key Pair:** Create or select existing
-- **Storage:** 8 GB (default)
-
-### Security Group Rules
+**Security Group Rules:**
 
 | Type | Port | Source |
 |------|------|--------|
-| SSH  | 22   | My IP |
-| HTTP | 80   | 0.0.0.0/0 |
-| HTTPS| 443  | 0.0.0.0/0 |
+| SSH | 22 | My IP |
+| HTTP | 80 | 0.0.0.0/0 |
+| HTTPS | 443 | 0.0.0.0/0 |
 
 Click **Launch Instance**.
 
 ---
 
-## Step 2️⃣ Connect to EC2
+### Step 2️⃣ Connect to EC2
 
-### Using AWS Console
+**Using AWS Console:**
 
-EC2 → Select Instance → Connect → EC2 Instance Connect
+> EC2 → Select Instance → Connect → EC2 Instance Connect
 
-
-### OR Using SSH
+**Using SSH:**
 
 ```bash
 chmod 400 nginx-key.pem
 ssh -i nginx-key.pem ec2-user@YOUR_PUBLIC_IP
-📌 Phase 2 — Install NGINX
-Step 3️⃣ Update Server
+```
+
+---
+
+## 📌 Phase 2 — Install NGINX
+
+### Step 3️⃣ Update Server
+
+```bash
 sudo yum update -y
-Step 4️⃣ Install NGINX
+```
+
+### Step 4️⃣ Install NGINX
+
+```bash
 sudo yum install nginx -y
-Step 5️⃣ Start and Enable NGINX
+```
+
+### Step 5️⃣ Start and Enable NGINX
+
+```bash
 sudo systemctl start nginx
 sudo systemctl enable nginx
 sudo systemctl status nginx
-If you see:
+```
 
-Active: active (running)
-NGINX is running successfully.
+If you see `Active: active (running)` — NGINX is running successfully ✅
 
-Step 6️⃣ Test in Browser
-Open:
+### Step 6️⃣ Test in Browser
 
-http://YOUR_PUBLIC_IP
-You should see:
+Open: `http://YOUR_PUBLIC_IP`
 
-Welcome to nginx!
+You should see: **Welcome to nginx!**
 
-📌 Phase 3 — Host Your Custom Website
-Step 7️⃣ Create Website Directory
+---
+
+## 📌 Phase 3 — Host Your Custom Website
+
+### Step 7️⃣ Create Website Directory
+
+```bash
 sudo mkdir -p /usr/share/nginx/html/mywebsite
-Step 8️⃣ Create HTML File
+```
+
+### Step 8️⃣ Create HTML File
+
+```bash
 sudo nano /usr/share/nginx/html/mywebsite/index.html
+```
+
 Paste your HTML content and save.
 
-Step 9️⃣ Update NGINX Configuration
+### Step 9️⃣ Update NGINX Configuration
+
+```bash
 sudo nano /etc/nginx/nginx.conf
+```
+
 Find:
-
+```nginx
 root /usr/share/nginx/html;
+```
+
 Change to:
-
+```nginx
 root /usr/share/nginx/html/mywebsite;
-Add inside the location block:
+```
 
+Add inside the `location` block:
+```nginx
 location / {
     try_files $uri $uri/ =404;
 }
-Step 🔟 Test & Reload
+```
+
+### Step 🔟 Test & Reload
+
+```bash
 sudo nginx -t
 sudo systemctl reload nginx
-Visit:
+```
 
-http://YOUR_PUBLIC_IP
-Your custom website is now live 🎉
+Visit: `http://YOUR_PUBLIC_IP` — your custom website is now live 🎉
 
-📌 Phase 4 — Connect Domain (Required for SSL)
-⚠️ SSL cannot be issued for a public IP. You must use a domain name.
+---
 
-Step 1️⃣ Purchase Domain (Optional)
+## 📌 Phase 4 — Connect Domain (Required for SSL)
+
+> ⚠️ **SSL cannot be issued for a public IP.** You must use a domain name.
+
+### Step 1️⃣ Purchase Domain
+
 You can use:
+- [GoDaddy](https://www.godaddy.com)
+- [Namecheap](https://www.namecheap.com)
+- [Google Domains](https://domains.google)
 
-GoDaddy
+### Step 2️⃣ Point Domain to EC2
 
-Namecheap
+In your DNS settings, create:
 
-Google Domains
+| Type | Name | Value |
+|------|------|-------|
+| A Record | @ | YOUR_PUBLIC_IP |
 
-Step 2️⃣ Point Domain to EC2
-In your domain DNS settings, create:
+Wait **5–10 minutes** for DNS propagation, then test: `http://yourdomain.com`
 
-Type	Name	Value
-A Record	@	YOUR_PUBLIC_IP
-Wait 5–10 minutes for DNS propagation.
-
-Test:
-
-http://yourdomain.com
 If it loads successfully, proceed to SSL.
 
-🔐 Phase 5 — Install Certbot SSL (HTTPS)
-Step 1️⃣ Install Certbot
+---
+
+## 🔐 Phase 5 — Enable SSL with Certbot
+
+### Step 1️⃣ Install Certbot
+
+```bash
 sudo yum install certbot python3-certbot-nginx -y
-Step 2️⃣ Obtain SSL Certificate
+```
+
+### Step 2️⃣ Obtain SSL Certificate
+
 Replace with your domain:
 
+```bash
 sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+```
+
 You will be prompted for:
+- Email address
+- Terms agreement
+- HTTP → HTTPS redirect (choose **2: Redirect**)
 
-Email address
+Certbot will automatically:
+- Generate SSL certificate
+- Update NGINX configuration
+- Enable HTTPS
+- Add HTTP → HTTPS redirect
 
-Terms agreement
+### Step 3️⃣ Test HTTPS
 
-HTTP to HTTPS redirect
+Open: `https://yourdomain.com`
 
-Choose:
+You should see: 🔒 **Secure connection (Green lock)**
 
-2: Redirect
-Certbot will:
+### Step 4️⃣ Verify Auto-Renewal
 
-Generate SSL certificate
-
-Update NGINX configuration
-
-Enable HTTPS
-
-Add automatic HTTP → HTTPS redirect
-
-Step 3️⃣ Test HTTPS
-Open:
-
-https://yourdomain.com
-You should see:
-
-🔒 Secure connection (Green lock)
-
-📌 Verify Auto-Renewal
-Test renewal process:
-
+```bash
 sudo certbot renew --dry-run
-If no errors appear, auto-renewal is working correctly.
+```
 
-📂 Important Files
-File	Purpose
-/etc/nginx/nginx.conf	Main NGINX configuration
-/etc/letsencrypt/live/	SSL certificate files
-/var/log/nginx/access.log	Access logs
-/var/log/nginx/error.log	Error logs
+If no errors appear, auto-renewal is working correctly ✅
 
-🔄 Common NGINX Commands
-sudo systemctl start nginx
-sudo systemctl stop nginx
-sudo systemctl restart nginx
-sudo systemctl reload nginx
-sudo nginx -t
+---
 
-🐛 Troubleshooting SSL
-If SSL fails:
+## 📂 Important Files
 
+| File | Purpose |
+|------|---------|
+| `/etc/nginx/nginx.conf` | Main NGINX configuration |
+| `/etc/letsencrypt/live/` | SSL certificate files |
+| `/var/log/nginx/access.log` | Access logs |
+| `/var/log/nginx/error.log` | Error logs |
+
+---
+
+## 🔄 Common NGINX Commands
+
+```bash
+sudo systemctl start nginx    # Start NGINX
+sudo systemctl stop nginx     # Stop NGINX
+sudo systemctl restart nginx  # Restart NGINX
+sudo systemctl reload nginx   # Reload config (no downtime)
+sudo nginx -t                 # Test configuration syntax
+```
+
+---
+
+## 🐛 Troubleshooting
+
+**If SSL fails, check:**
+
+```bash
 sudo nginx -t
 sudo systemctl status nginx
 sudo tail -50 /var/log/nginx/error.log
-Common issues:
-
-DNS not propagated
-
-Port 80 blocked
-
-Incorrect domain name
-
-🧹 Cleanup (Avoid AWS Charges)
-To prevent charges:
-
-EC2 → Terminate Instance
-
-Release Elastic IP (if used)
-
-Delete Security Group (optional)
-
-✅ Final Architecture
-Without SSL
-User
- ↓
-Domain
- ↓
-NGINX (EC2)
- ↓
-HTML Website
-
-
-With SSL
-User
- ↓
-HTTPS (443)
- ↓
-NGINX + Certbot
- ↓
-Website
-
-
-## 📸 Screenshots
-
----
-
-### Installation
-
-![requirements](Output/1.png)
-
----
-### Test Your Web Server
-
-Open browser and navigate to:
 ```
 
-![testing](Output/2.png)
+**Common issues:**
 
+- DNS not yet propagated
+- Port 80 blocked in Security Group
+- Incorrect domain name in Certbot command
+
+---
+
+## 🧹 Cleanup (Avoid AWS Charges)
+
+To prevent unexpected charges:
+
+1. EC2 → **Terminate Instance**
+2. **Release Elastic IP** (if used)
+3. **Delete Security Group** (optional)
+
+---
+
+## ✅ Final Architecture
+
+**Without SSL:**
 ```
----
+User → Domain → NGINX (EC2) → HTML Website
+```
 
-![app file](Output/3.png)
-
----
-
-###  Enable SSL with Certbot
-
-
-![certbot](Output/4.png)
+**With SSL:**
+```
+User → HTTPS (443) → NGINX + Certbot → Website
+```
 
 ---
 
-### 🔐 HTTPS Working (Green Padlock)
+# 📸 Screenshots
 
-![HTTPS](Output/6.png)
+## 🛠 Installation
+
+![Installation](./Output/1.png)
 
 ---
 
+## 🌐 Test Your Web Server
+
+Open your browser and navigate to:
+
+http://YOUR_PUBLIC_IP
+
+![Testing](./Output/2.png)
+
 ---
-### Ngnix
-![Ngnix](Output/7.png)
+
+## 📂 Application Files
+
+![App File](./Output/3.png)
+
+---
+
+## 🔐 Enable SSL with Certbot
+
+![Certbot](./Output/4.png)
+
+---
+
+## 🔒 HTTPS Working (Green Padlock)
+
+![HTTPS](./Output/6.png)
+
+---
+
+## 🖥 NGINX Running
+
+![NGINX](./Output/7.png)
+
+---
+
+
+---
+
+*Built with ❤️ on AWS EC2 + NGINX + Let's Encrypt*
+
 
 ---
 
