@@ -191,13 +191,20 @@ Deleted in correct order to avoid charges:
 
 ---
 
-### 🚀 Auto Scaling Group (2 Instances Running)
+### 🚀 Ec2 Instances Running
 
 ![ASG Running](Output/7.png)
 
 ---
 
-### 🎯 Target Group - Healthy Targets
+---
+
+### Launch Template
+
+![ASG Running](Output/6.png)
+
+---
+### 🎯 Auto Scaling Group (2 Instances Management)
 
 ![Target Group](Output/8.png)
 
@@ -221,7 +228,7 @@ Deleted in correct order to avoid charges:
 
 ---
 
-### 📈 Auto Scaling Activity
+### 📈 Target Group
 
 ![Scaling Activity](Output/10.png)
 

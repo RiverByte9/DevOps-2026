@@ -505,7 +505,6 @@ sudo tail -f /var/log/cloud-init-output.log
 - [ ] Tested auto scaling (scale down verified)
 - [ ] Code pushed to GitHub
 
-**Deadline:** Sunday 11:59 PM
 
 ---
 
