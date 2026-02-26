@@ -44,38 +44,12 @@ A JSON config that defines:
 - **Not auto-scaling**
 - Use for: one-time jobs, automations, AI agents that run and finish
 
-┌─────────────────────────────┐
-│           TASK              │
-│  ┌───────────┐              │
-│  │ Container │              │
-│  │   (app)   │              │
-│  └───────────┘              │
-│                             │
-│  - AWS Networking (ENI)     │
-│  - IAM Role attached        │
-│  - CloudWatch logging       │
-│  - CPU/Memory allocated     │
-└─────────────────────────────┘
-
 ### Service *(Wrapper around tasks)*
 - Manages **scaling** and **self-healing** of tasks
 - Self-healing = if a task dies, a new one comes up (not the same task restarting)
 - Define desired task count
 - Attach a **load balancer** here
 - Use for: always-running apps (web servers, APIs, persistent agents)
-┌─────────────────────────────────────────┐
-│                SERVICE                  │
-│                                         │
-│  ┌──────────┐  ┌──────────┐  ┌────────┐ │
-│  │  TASK 1  │  │  TASK 2  │  │ TASK 3 │ │
-│  │ ┌──────┐ │  │ ┌──────┐ │  │┌──────┐│ │
-│  │ │ App  │ │  │ │ App  │ │  ││ App  ││ │
-│  │ └──────┘ │  │ └──────┘ │  │└──────┘│ │
-│  └──────────┘  └──────────┘  └────────┘ │
-│                                         │
-│  - Self Healing    - Load Balancer      │
-│  - Auto Scaling    - Desired Count      │
-└─────────────────────────────────────────┘
 
 ### Cluster
 - Logical grouping — **not a physical resource, no cost**
