@@ -1,0 +1,39 @@
+# ─────────────────────────────────────────────────────────────────
+# Stage 1 — builder: install Python deps into a clean prefix
+# ─────────────────────────────────────────────────────────────────
+FROM python:3.12-slim AS builder
+
+WORKDIR /install
+
+COPY requirements.txt .
+
+# Install into an isolated prefix so we can copy only what we need
+RUN pip install --prefix=/install/pkg --no-cache-dir -r requirements.txt
+
+
+# ─────────────────────────────────────────────────────────────────
+# Stage 2 — runtime: minimal image, no build tools
+# ─────────────────────────────────────────────────────────────────
+FROM python:3.12-slim
+
+# Non-root user for least-privilege
+RUN useradd --no-create-home --shell /bin/false appuser
+
+WORKDIR /app
+
+# Copy installed packages from builder stage
+COPY --from=builder /install/pkg /usr/local
+
+COPY app.py .
+
+# 🔑 /run/secrets is where Docker (and docker-compose) mounts
+#    tmpfs secrets at runtime. We create the directory here so
+#    the filesystem path always exists — even in bare `docker run`.
+RUN mkdir -p /run/secrets && chown appuser:appuser /run/secrets
+
+USER appuser
+
+EXPOSE 5000
+
+# Run init_db() then start the server
+CMD ["python", "-c", "import app; app.init_db(); app.app.run(host='0.0.0.0', port=5000)"]

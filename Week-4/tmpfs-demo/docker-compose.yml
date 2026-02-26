@@ -1,0 +1,103 @@
+# ─────────────────────────────────────────────────────────────────
+# docker-compose.yml — tmpfs secrets demo
+#
+# HOW SECRETS WORK HERE:
+#
+#   1. We declare each secret under the top-level `secrets:` key,
+#      pointing to a file on the HOST that holds the value.
+#
+#   2. Each service that needs a secret lists it under its own
+#      `secrets:` key. Docker then:
+#        a. Reads the file content from the host
+#        b. Creates a tmpfs mount inside the container at
+#           /run/secrets/<secret_name>
+#        c. Writes the value into that in-memory file
+#
+#   3. The host-side file (./secrets/db_password etc.) is ONLY
+#      used at startup to seed the tmpfs. The container never
+#      sees the host path.
+#
+#   4. When the container stops, the tmpfs is destroyed — gone.
+#      No trace on any disk layer inside the container image.
+#
+# COMPARE TO ENV VARS:
+#   ❌  environment: DB_PASSWORD=supersecret
+#          → visible in `docker inspect`, shell history, CI logs
+#   ✅  secrets: db_password (tmpfs)
+#          → only in RAM, only while container is alive
+# ─────────────────────────────────────────────────────────────────
+
+
+# ── Secret definitions ────────────────────────────────────────────
+# Each entry maps a secret name → a file on the Docker host.
+# These files should NOT be committed to version control.
+# Add secrets/ to your .gitignore!
+secrets:
+  db_name:
+    file: ./secrets/db_name.txt       # contains: tododb
+  db_user:
+    file: ./secrets/db_user.txt       # contains: todouser
+  db_password:
+    file: ./secrets/db_password.txt   # contains: s3cr3tpassword!
+
+
+# ── Services ──────────────────────────────────────────────────────
+services:
+
+  # ── PostgreSQL database ────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+
+    # The official postgres image reads these env vars to init the DB.
+    # We still use env vars here — but ONLY for the db service itself
+    # (Postgres needs them at first boot to create the DB/user).
+    # The app service does NOT use env vars for credentials.
+    environment:
+      POSTGRES_DB_FILE:       /run/secrets/db_name      # ← reads from tmpfs
+      POSTGRES_USER_FILE:     /run/secrets/db_user      # ← reads from tmpfs
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password  # ← reads from tmpfs
+
+    # Grant db service access to all three secrets
+    secrets:
+      - db_name
+      - db_user
+      - db_password
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $(cat /run/secrets/db_user) -d $(cat /run/secrets/db_name)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+
+  # ── Flask app ──────────────────────────────────────────────────
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+
+    # Only non-sensitive config as env vars — totally fine
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+
+    # 🔐 These three are injected as tmpfs files at /run/secrets/
+    #    app.py reads them with open("/run/secrets/db_name") etc.
+    secrets:
+      - db_name
+      - db_user
+      - db_password
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+
+# ── Volumes ───────────────────────────────────────────────────────
+volumes:
+  pgdata:
