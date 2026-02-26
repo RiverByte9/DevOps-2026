@@ -289,6 +289,10 @@ If moving this to a real production environment:
 
 ---
 
+## Aws_ecs_architecture
+
+![Architecture](Architecture.png)
+
 ## References
 
 - [LivingDevOps — Deploying a 3-Tier Production Application on AWS ECS](https://livingdevops.com/aws/deploying-a-3-tier-production-application-on-aws-ecs-a-complete-guide/)
@@ -296,4 +300,3 @@ If moving this to a real production environment:
 - [AWS Fargate Documentation](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html)
 - [Amazon RDS Documentation](https://docs.aws.amazon.com/rds/)
 
-![Architecture](Architecture.png)
