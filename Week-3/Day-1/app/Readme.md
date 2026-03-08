@@ -206,7 +206,7 @@ Deleted in correct order to avoid charges:
 ---
 ### 🎯 Auto Scaling Group (2 Instances Management)
 
-![Target Group](Output/8.png)
+![Target Group](Week-3/Day-1/Output/8.png)
 
 ---
 
