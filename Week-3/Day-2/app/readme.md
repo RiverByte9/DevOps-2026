@@ -507,7 +507,7 @@ sudo yum install postgresql15 -y
 Connect:
 
 ```
-psql -h jan26week3.cvik8accw2tk.ap-south-1.rds.amazonaws.com -U postgres -d jan26week3
+psql -h jan26week3.cXXXXX5r.ap-south-1.rds.amazonaws.com -U postgres -d jan26week3
 ```
 
 Check table:
