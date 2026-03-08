@@ -193,7 +193,7 @@ Deleted in correct order to avoid charges:
 
 ### 🚀 Ec2 Instances Running
 
-![ASG Running](Output/7.png)
+![ASG Running](../Output/7.png)
 
 ---
 
@@ -201,7 +201,7 @@ Deleted in correct order to avoid charges:
 
 ### Launch Template
 
-![ASG Running](Output/6.png)
+![ASG Running](../Output/6.png)
 
 ---
 ### 🎯 Auto Scaling Group (2 Instances Management)
@@ -212,25 +212,25 @@ Deleted in correct order to avoid charges:
 
 ### ⚖️ Application Load Balancer Listeners
 
-![ALB Listener](Output/12.png)
+![ALB Listener](../Output/12.png)
 
 ---
 
 ### 📝 Route 53 Record
 
-![Route53 Record](Output/5.png)
+![Route53 Record](../Output/5.png)
 
 ---
 
 ### 🔐 HTTPS Working (Green Padlock)
 
-![HTTPS](Output/3.png)
+![HTTPS](../Output/3.png)
 
 ---
 
 ### 📈 Target Group
 
-![Scaling Activity](Output/10.png)
+![Scaling Activity](../Output/10.png)
 
 ---
 
