@@ -457,6 +457,7 @@ Status should become:
 ```
 Healthy
 ```
+![alt text](<Screenshot 2026-03-08 123414.png>)
 
 If unhealthy wait **1–2 minutes**.
 
@@ -485,6 +486,7 @@ http://ALB-DNS
 ```
 
 You will see:
+![alt text](image.png)
 
 ```
 User Registration Form
