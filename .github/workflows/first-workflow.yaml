@@ -1,0 +1,25 @@
+name: First Workflow
+
+on:
+  workflow_dispatch:
+    
+jobs:
+  first-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Single Command
+        run: echo "Hello from step 1"
+
+      - name: Multiple Commands
+        run: |
+          echo 'Hello from step 1'
+          echo 'Hello from step 2'
+          
+  second-job:
+    runs-on: windows-latest
+    needs: first-job        # Wait for first-job to finish first
+    steps:
+      - name: Windows Step
+        run: |
+          echo 'Hello from Windows'
+          sleep 10        
