@@ -1,0 +1,30 @@
+name: Kajal
+title: DevOps Engineer
+location: Pune, India
+
+summary: >
+  Learning DevOps and cloud technologies.
+  Interested in automation, CI/CD, and containerization.
+
+skills:
+  - AWS
+  - Docker
+  - GitHub Actions
+  - Linux
+  - Kubernetes
+
+projects:
+  - CI/CD Pipeline using GitHub Actions
+  - Dockerized Application
+
+education:
+  - Bachelor of Engineering (Computer Science)
+
+hobbies:
+  - Reading books to gain knowledge and new perspectives
+  - Gardening to stay connected with nature
+  - Cooking and exploring new recipes
+  
+contact:
+  email: your.email@example.com
+  github: https://github.com/yourusername
