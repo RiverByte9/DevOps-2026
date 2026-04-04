@@ -8,7 +8,7 @@ on:
 env:
   AWS_REGION: us-east-1
   TERRAFORM_VERSION: 1.14.7
-  INFRA_PATH: Week-6/infra
+  INFRA_PATH: Week-6/infra  
 
 jobs:
   terraform-plan:
@@ -49,4 +49,4 @@ jobs:
 
       - name: Terraform Plan
         working-directory: ${{ env.INFRA_PATH }}
-        run: terraform plan -no-color
+        run: terraform plan -no-color   
