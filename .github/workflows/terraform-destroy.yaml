@@ -9,7 +9,7 @@ env:
   infra_path: Week-6/infra/
 
 jobs:
-  terraform-apply:
+  terraform-destroy:
     runs-on: ubuntu-latest
     
 
