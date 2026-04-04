@@ -37,7 +37,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-  ecs-deploy:   # ✅ FIXED (inside jobs)
+  ecs-deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
 
@@ -63,7 +63,7 @@ jobs:
       - name: Download task definition
         run: |
           aws ecs describe-task-definition \
-          --task-definition $ECS_TASK_DEFINITION \
+          --task-definition "${{ env.ECS_TASK_DEFINITION }}" \
           --query taskDefinition > task-definition.json
 
       - name: Update task definition
