@@ -56,9 +56,10 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Download task definition
-        run: aws ecs describe-task-definition \
-          --task-definition ${{ env.ecs_task_definition }} \
-          --query taskDefinition > task-definition.json
+        run: |
+         aws ecs describe-task-definition \
+         --task-definition $ECS_TASK_DEFINITION \
+         --query taskDefinition > task-definition.json
 
       - name: Update task definition
         run: |
