@@ -11,8 +11,8 @@ env:
   ECR_REGISTRY: 292659698930.dkr.ecr.ap-south-1.amazonaws.com
   ECR_REPOSITORY: jan26-bootcamp-student-portal
   IMAGE_TAG: ${{ github.sha }} # $GITHUB_SHA
-  app_path: Week-6/app/
-
+  app_path: Week-6/student-portal/app/
+ 
 
 jobs:  
   build-and-push:
