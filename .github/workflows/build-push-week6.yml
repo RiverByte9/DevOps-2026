@@ -37,15 +37,15 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-  ecs-deploy:
+  ecs-deploy:   # ✅ FIXED (inside jobs)
     needs: build-and-push
     runs-on: ubuntu-latest
 
     env:
-      ecs_cluster: jan26-bootcamp-student-portal
-      ecs_service: jan26-bootcamp-student-portal-service
-      ecs_task_definition: jan26-bootcamp-student-portal-task
-      new_image: 292659698930.dkr.ecr.ap-south-1.amazonaws.com/jan26-bootcamp-student-portal:${{ github.sha }}
+      ECS_CLUSTER: jan26-bootcamp-student-portal
+      ECS_SERVICE: jan26-bootcamp-student-portal-service
+      ECS_TASK_DEFINITION: jan26-bootcamp-student-portal-task
+      NEW_IMAGE: 292659698930.dkr.ecr.us-east-1.amazonaws.com/jan26-bootcamp-student-portal:${{ github.sha }}
 
     steps:
       - name: Configure AWS Credentials
@@ -55,15 +55,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Debug env
+        run: |
+          echo "Task: $ECS_TASK_DEFINITION"
+          echo "Image: $NEW_IMAGE"
+
       - name: Download task definition
         run: |
-         aws ecs describe-task-definition \
-         --task-definition $ECS_TASK_DEFINITION \
-         --query taskDefinition > task-definition.json
+          aws ecs describe-task-definition \
+          --task-definition $ECS_TASK_DEFINITION \
+          --query taskDefinition > task-definition.json
 
       - name: Update task definition
         run: |
-          jq --arg IMAGE "${{ env.new_image }}" \
+          jq --arg IMAGE "$NEW_IMAGE" \
           '.containerDefinitions[0].image = $IMAGE' \
           task-definition.json > updated.json
           mv updated.json task-definition.json
@@ -72,6 +77,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: task-definition.json
-          service: ${{ env.ecs_service }}
-          cluster: ${{ env.ecs_cluster }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
