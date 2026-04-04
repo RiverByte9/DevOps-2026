@@ -9,7 +9,7 @@ on:
 env:
   AWS_REGION: us-east-1
   Terraform_version: 1.14.7
-  infra_path: ./Week-6/infra
+  infra_path: DevOps-2026/Week-6/infra
 
 jobs:
   terraform-apply:
