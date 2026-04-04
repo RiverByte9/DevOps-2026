@@ -1,14 +1,14 @@
 name: terraform pr checks
 
 on:
-  # pull_request:
-  #   branches:
-  #     - main
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  #workflow_dispatch:
 env:
-  AWS_REGION: ap-south-1
-  Terraform_Version: 1.12.1
-  infra_path: week6/infra/
+  AWS_REGION: us-east-1
+  Terraform_Version: 1.14.7
+  infra_path: Week-6/infra/
 
 
 jobs:
