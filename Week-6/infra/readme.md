@@ -176,7 +176,7 @@ health_check {
 ### Step 4: Verify Networking
 
 | Component | Required Rule |
-|---|---|
+|-----------|---------------|
 | ALB Security Group | Inbound HTTP (port 80) from `0.0.0.0/0` |
 | ECS Security Group | Inbound from ALB Security Group |
 | Subnets | Public (assign public IP) OR Private + NAT Gateway |

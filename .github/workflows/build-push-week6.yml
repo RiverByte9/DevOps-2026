@@ -5,13 +5,13 @@ on:
 
 
 env:
-  AWS_REGION: ap-south-1
+  AWS_REGION: us-east-1
   # << --------- ECR_REGISTRY ------------------>/<--- ECR_REPOSITORY ----->:
   # 879381241087.dkr.ecr.ap-south-1.amazonaws.com/jan26-bootcamp-student-portal
-  ECR_REGISTRY: 879381241087.dkr.ecr.ap-south-1.amazonaws.com
+  ECR_REGISTRY: 292659698930.dkr.ecr.ap-south-1.amazonaws.com
   ECR_REPOSITORY: jan26-bootcamp-student-portal
   IMAGE_TAG: ${{ github.sha }} # $GITHUB_SHA
-  app_path: week6/app/
+  app_path: Week-6/app/
 
 
 jobs:  
@@ -52,7 +52,7 @@ jobs:
       ecs_cluster: jan26-bootcamp-student-portal
       ecs_service: jan26-bootcamp-student-portal-service 
       ecs_task_definition: jan26-bootcamp-student-portal-task
-      new_image: 879381241087.dkr.ecr.ap-south-1.amazonaws.com/jan26-bootcamp-student-portal:${{ github.sha }}
+      new_image: 292659698930.dkr.ecr.ap-south-1.amazonaws.com/jan26-bootcamp-student-portal:${{ github.sha }}
 
     steps:
       - name: Configure AWS Credentials
