@@ -38,7 +38,7 @@ variable "prefix" {
 variable "image" {
   type    = string
   default = "292659698930.dkr.ecr.us-east-1.amazonaws.com/jan26week5-studentportal:1.0"
-  
+
 }
 
 variable "container_port" {
@@ -52,12 +52,12 @@ variable "db_link" {
 }
 
 variable "domain_name" {
-  type = string
+  type    = string
   default = "devopsnotebook.xyz"
 }
 
 variable "alb_zone_id" {
-  type = string
+  type        = string
   description = "zone id for ALB on a certain region"
-  default = "Z11ORPS3UI2S3F"
+  default     = "Z11ORPS3UI2S3F"
 }
