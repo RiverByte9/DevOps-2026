@@ -1,282 +1,226 @@
-# 📝 Student Portal — AWS ECS Deployment
+Here's a proper README documentation for all the errors faced and fixed:
 
-> Containerized web application deployed on AWS ECS (Fargate) using Terraform for infrastructure as code, with ECR for image registry and ALB for load balancing.
+```markdown
+# Week 7 — CI/CD Pipeline: Issues & Fixes
 
----
-
-## 📋 Table of Contents
-
-- [Architecture Overview](#architecture-overview)
-- [Prerequisites](#prerequisites)
-- [ECR Setup & Image Push](#ecr-setup--image-push)
-- [Deploy Infrastructure](#deploy-infrastructure)
-- [ECS Debugging Guide](#ecs-debugging-guide)
-- [IAM Troubleshooting](#iam-troubleshooting)
-- [Quick Checklist](#quick-checklist)
+## Overview
+This document captures all errors encountered while building the CI/CD pipeline and how each was resolved.
 
 ---
 
-## 🏗️ Architecture Overview
+## Error 1 — Ruff Lint: Unused Imports
 
+### What happened
+The `Lint with ruff` step failed in GitHub Actions with exit code 1.
+
+### Error output
 ```
-Terraform → Creates infrastructure (ECR, ECS, ALB, IAM)
-Docker    → Builds & pushes container image
-ECS       → Pulls image from ECR and runs container
-ALB       → Routes traffic to ECS tasks
-CloudWatch → Collects logs & helps debug failures
-```
+F401 `time` imported but unused
+ --> app/metrics.py:2:8
 
----
+F401 `werkzeug.security.generate_password_hash` imported but unused
+ --> app/models/models.py:3:31
 
-## ✅ Prerequisites
+F401 `flask.session` imported but unused
+ --> app/routes/auth.py:1:82
 
-- AWS CLI configured (`aws configure`)
-- Terraform >= 1.0
-- Docker installed and running
-- IAM permissions for ECR, ECS, ALB, CloudWatch, and IAM
+F401 `flask_login.current_user` imported but unused
+ --> app/routes/auth.py:4:50
 
----
-
-## 📦 ECR Setup & Image Push
-
-### 1. Create ECR Repository
-
-```bash
-terraform init
-terraform apply -target=aws_ecr_repository.app_image
+F401 `app.models.models.Announcement` imported but unused
+ --> tests/test_app.py:7:70
 ```
 
-### 2. Get AWS Account ID
+### Root cause
+Imports were added during development but never used in the code.
 
-```bash
-aws sts get-caller-identity
-```
+### Fix
+Removed all unused imports from the respective files.
 
-Copy the `Account` value — you'll need it in the next steps.
+```python
+# metrics.py — removed
+import time
 
-### 3. Authenticate Docker with ECR
+# models.py — removed generate_password_hash, kept check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
+# changed to
+from werkzeug.security import check_password_hash
 
-```bash
-aws ecr get-login-password --region us-east-1 \
-  | docker login --username AWS \
-    --password-stdin <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
-```
+# auth.py — removed session and current_user
+from flask import ..., session
+from flask_login import ..., current_user
 
-### 4. Build Docker Image
-
-```bash
-docker build -t studentportal .
-```
-
-### 5. Tag Image
-
-```bash
-docker tag studentportal:latest \
-  <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/jan26week5-studentportal:1.0
-```
-
-### 6. Push Image to ECR
-
-```bash
-docker push \
-  <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/jan26week5-studentportal:1.0
-```
-
-### 7. Reference Image in Terraform (ECS Task Definition)
-
-**Hardcoded (not recommended):**
-```hcl
-image = "<ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/jan26week5-studentportal:1.0"
-```
-
-**Using Terraform reference (recommended):**
-```hcl
-image = "${aws_ecr_repository.app_image.repository_url}:1.0"
+# test_app.py — removed Announcement
+from app.models.models import User, Student, Attendance, Assignment, Announcement
+# changed to
+from app.models.models import User, Student, Attendance, Assignment
 ```
 
 ---
 
-## 🚀 Deploy Infrastructure
+## Error 2 — Ruff Lint: Unused Variables
 
-```bash
-terraform apply
+### What happened
+Ruff flagged variables that were assigned but never used.
+
+### Error output
+```
+F841 Local variable `total_marked_days` is assigned to but never used
+  --> app/routes/routes.py:21:5
+
+F841 Local variable `e` is assigned to but never used
+  --> app/routes/routes.py:125:25
+  --> app/routes/routes.py:175:29
+  --> app/routes/routes.py:208:29
+
+F841 Local variable `today` is assigned to but never used
+  --> tests/test_app.py:117:5
+```
+
+### Root cause
+Variables were assigned during development but never referenced afterward.
+
+### Fix
+```python
+# Deleted unused variable
+total_marked_days = Attendance.query.distinct(Attendance.date).count()
+
+# Changed except blocks from
+except Exception as e:
+# to
+except Exception:
+
+# Deleted unused variable in test_app.py
+today = date.today().isoformat()
 ```
 
 ---
 
-## 🐞 ECS Debugging Guide — 0/1 Tasks Running
+## Error 3 — Ruff Lint: Wrong Boolean Comparisons
 
-### Step 1: Inspect Stopped Tasks
+### What happened
+Ruff flagged equality comparisons to `True` and `False` as bad practice.
 
-1. Navigate to **Amazon ECS → Cluster → Service → Tasks**
-2. Filter by **Stopped**
-3. Click the task → review **Stopped Reason**
+### Error output
+```
+E712 Avoid equality comparisons to `False`
+  --> app/routes/routes.py:41:9
+  --> app/routes/routes.py:221:9
 
----
-
-### Step 2: Common Errors & Fixes
-
-| Error | Cause | Fix |
-|---|---|---|
-| `CannotPullContainerError` | Image not pushed or wrong URI/tag | Re-push image to ECR |
-| `ResourceInitializationError` | No internet access (private subnet) | Use public subnet or add NAT Gateway |
-| `AccessDeniedException` | Missing IAM role permissions | Attach required policies (see below) |
-| Port mismatch | App port differs from ECS config | Match container port in task definition |
-| Health check failed | Wrong ALB health check path | Set correct path in `health_check` block |
-
----
-
-####  CannotPullContainerError
-
-```bash
-# Verify image exists in ECR
-aws ecr describe-images --repository-name jan26week5-studentportal
-
-# Re-push if missing
-docker push <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/jan26week5-studentportal:1.0
+E712 Avoid equality comparisons to `True`
+  --> app/routes/routes.py:224:9
 ```
 
-####  ResourceInitializationError (No internet / NAT)
+### Root cause
+Using `== False` and `== True` in Python is considered bad style. Ruff enforces PEP 8.
 
-```hcl
-# Option A: Deploy in public subnet with public IP
-network_configuration {
-  assign_public_ip = true
-  subnets          = [aws_subnet.public.id]
-}
-
-# Option B: Deploy in private subnet with NAT Gateway
-# (add NAT Gateway to your Terraform config)
+### First fix attempt (wrong)
+```python
+# Ruff suggested this — works in plain Python but BREAKS SQLAlchemy queries
+not Assignment.is_completed
 ```
 
-####  Health Check Failed
+### Why it broke the app
+`not Assignment.is_completed` is evaluated by Python immediately and returns `True` or `False`. SQLAlchemy never receives it as a filter condition, so **all assignments disappeared** from the UI.
 
-```hcl
-health_check {
-  path                = "/"
-  interval            = 30
-  timeout             = 5
-  healthy_threshold   = 2
-  unhealthy_threshold = 3
-}
+### Final correct fix
+```python
+# Use SQLAlchemy's .is_() method — satisfies ruff AND works in database queries
+Assignment.is_completed.is_(False)   # replaces == False
+Assignment.is_completed.is_(True)    # replaces == True
 ```
 
 ---
 
-### Step 3: Check CloudWatch Logs
+## Error 4 — Trivy Scan: HIGH Vulnerabilities
 
-1. Navigate to **Amazon CloudWatch → Log Groups → `/ecs/jan26week5-studentportal`**
-2. Check for:
-   - Application crashes or startup errors
-   - Database connection failures
-   - Missing environment variables
+### What happened
+The `scan the container` step failed because Trivy found HIGH severity vulnerabilities.
 
----
-
-### Step 4: Verify Networking
-
-| Component | Required Rule |
-|-----------|---------------|
-| ALB Security Group | Inbound HTTP (port 80) from `0.0.0.0/0` |
-| ECS Security Group | Inbound from ALB Security Group |
-| Subnets | Public (assign public IP) OR Private + NAT Gateway |
-
----
-
-## 🔐 IAM Troubleshooting
-
-### AccessDeniedException — logs:CreateLogGroup
-
-**Error:**
+### Error output
 ```
-ResourceInitializationError: failed to validate logger args:
-User: arn:aws:sts::<ACCOUNT_ID>:assumed-role/ecsTaskExecutionRole/...
-is not authorized to perform: logs:CreateLogGroup
+Total: 6 (HIGH: 6, CRITICAL: 0)
+
+Library       | CVE            | Severity | Status   | Fixed Version
+libncursesw6  | CVE-2025-69720 | HIGH     | affected | (none)
 ```
 
-**Root Cause:** The ECS task execution role is missing CloudWatch Logs permissions.
+### Root cause
+The base Docker image contained OS-level packages with known vulnerabilities. The `Fixed Version` column was empty, meaning no patch was available yet.
 
-**Fix — Inline Policy (Console):**
+### Fix
+Added `ignore-unfixed: true` to the Trivy scan step so vulnerabilities with no available fix are skipped.
 
-1. Go to **IAM → Roles** → search for `jan26-bootcamp-student-portal-ecsTaskExecutionRole`
-2. Click **Add permissions → Create inline policy**
-3. Switch to **JSON** tab and paste:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents",
-        "logs:DescribeLogStreams"
-      ],
-      "Resource": "arn:aws:logs:us-east-1:*:log-group:/ecs/*"
-    }
-  ]
-}
-```
-
-4. Name it `ECSCloudWatchLogsPolicy` → **Save**
-
-**Fix — Terraform (recommended):**
-
-```hcl
-resource "aws_iam_role_policy" "ecs_cloudwatch_logs" {
-  name = "ECSCloudWatchLogsPolicy"
-  role = aws_iam_role.ecs_task_execution_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents",
-          "logs:DescribeLogStreams"
-        ]
-        Resource = "arn:aws:logs:us-east-1:*:log-group:/ecs/*"
-      }
-    ]
-  })
-}
+```yaml
+- name: scan the container
+  uses: aquasecurity/trivy-action@master
+  with:
+    image-ref: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+    format: 'table'
+    exit-code: '1'
+    vuln-type: 'os,library'
+    severity: 'CRITICAL,HIGH'
+    hide-progress: 'true'
+    ignore-unfixed: true        # ← added this
 ```
 
 ---
 
-## ✅ Quick Checklist
+## Error 5 — Assignment Feature Not Working
 
-- [ ] ECR repository created via Terraform
-- [ ] Docker image built and pushed to ECR
-- [ ] Correct image URI referenced in ECS task definition
-- [ ] CloudWatch log group permissions attached to task execution role
-- [ ] ALB and ECS security groups configured correctly
-- [ ] Subnets configured (public IP or NAT Gateway)
-- [ ] Health check path matches application route
+### What happened
+Assignments were being added successfully (flash message appeared) but the Pending list always showed 0 assignments.
+
+### Root cause
+When fixing the ruff E712 error, the SQLAlchemy filter was incorrectly changed to:
+
+```python
+# This evaluates in Python, not in the database query
+pending = Assignment.query.filter(
+    not Assignment.is_completed    # ← always True, no filter applied
+).all()
+```
+
+This caused ALL assignments to be returned as completed and NONE as pending.
+
+### Fix
+```python
+# Correct SQLAlchemy syntax
+pending = Assignment.query.filter(
+    Assignment.is_completed.is_(False)
+).order_by(Assignment.due_date.asc()).all()
+
+completed = Assignment.query.filter(
+    Assignment.is_completed.is_(True)
+).order_by(Assignment.due_date.desc()).limit(10).all()
+```
 
 ---
 
-## 📎 Useful Commands
+## Final Pipeline Order
 
-```bash
-# Check ECR images
-aws ecr describe-images --repository-name jan26week5-studentportal
-
-# Get current AWS identity
-aws sts get-caller-identity
-
-# List ECS services
-aws ecs list-services --cluster <CLUSTER_NAME>
-
-# Describe stopped tasks
-aws ecs describe-tasks --cluster <CLUSTER_NAME> --tasks <TASK_ARN>
+```
+1. Lint with ruff       ← catches unused imports, style issues
+2. Run unit tests       ← catches broken functionality  
+3. Build Docker image   ← only if code is clean and tested
+4. Scan with Trivy      ← only if image is built
+5. Push to ECR          ← only if scan passes
+6. Approval gate        ← human reviewer approves
+7. Deploy to ECS        ← rolling deploy
 ```
 
---- 
+---
 
-*Infrastructure managed with [Terraform](https://www.terraform.io/) · Container registry on [Amazon ECR](https://aws.amazon.com/ecr/) · Runtime on [Amazon ECS Fargate](https://aws.amazon.com/fargate/)*
+## Key Learnings
+
+| # | Learning |
+|---|---|
+| 1 | Always run `ruff check .` locally before pushing to avoid pipeline failures |
+| 2 | `ruff check --fix .` auto-fixes most issues but not all |
+| 3 | SQLAlchemy filters must use `.is_(False)` not `== False` to satisfy both ruff and the ORM |
+| 4 | `ignore-unfixed: true` in Trivy skips vulnerabilities that have no available patch |
+| 5 | Lint runs first because it is the cheapest and fastest check — fail early |
+```
+
+---
+
