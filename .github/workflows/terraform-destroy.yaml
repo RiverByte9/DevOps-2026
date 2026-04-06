@@ -6,7 +6,7 @@ on:
 env:
   AWS_REGION: us-east-1
   Terraform_Version: 1.14.7
-  infra_path: Week-6/infra/
+  infra_path: Week-7/infra/
 
 jobs:
   terraform-destroy:
