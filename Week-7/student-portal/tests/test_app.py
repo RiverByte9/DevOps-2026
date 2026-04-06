@@ -4,7 +4,7 @@ import pytest
 os.environ.setdefault("DB_LINK", "sqlite:///:memory:")
 
 from app import create_app, db
-from app.models.models import User, Student, Attendance, Assignment, Announcement
+from app.models.models import User, Student, Attendance, Assignment
 from datetime import date, timedelta
 
 
@@ -114,7 +114,7 @@ def test_mark_attendance(auth_client, app):
         db.session.commit()
         student_id = student.id
 
-    today = date.today().isoformat()
+    #today = date.today().isoformat()
     # The app stores string dates which PostgreSQL coerces but SQLite does not,
     # so we insert the attendance record directly to verify the model works.
     with app.app_context():

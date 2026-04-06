@@ -7,3 +7,26 @@
 
 # .terraform.lock.hcl
 .terraform.lock.hcl
+
+# Ignore Python virtual environments
+.venv/
+venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Unit test / coverage reports
+.coverage
+htmlcov/
+
+# IDE / editor settings
+.vscode/
+.idea/
+*.swp
