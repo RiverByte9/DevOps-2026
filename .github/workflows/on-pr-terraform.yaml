@@ -3,7 +3,7 @@ name: terraform pr checks
 on:
   pull_request:
     branches:
-      - main
+      - master
 
 env:
   AWS_REGION: us-east-1
