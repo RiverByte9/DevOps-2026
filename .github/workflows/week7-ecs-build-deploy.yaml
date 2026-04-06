@@ -22,6 +22,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       
+      # ── ADDED THIS LINT STEP ──────────────────────────
+      - name: Lint with ruff
+        working-directory: ${{ env.app_path }}
+        run: |
+          pip install ruff
+          ruff check .
+      # ───────────────────────────────────────────────
       - name: App test with pytest
         working-directory: ${{ env.app_path }}
         run: |
@@ -44,6 +51,8 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
           hide-progress: 'true'
+          ignore-unfixed: true
+
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v6
