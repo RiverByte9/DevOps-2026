@@ -15,7 +15,7 @@
 - [Quick Checklist](#quick-checklist)
 
 ---
-![alt text](ECS_2_Tier.png)
+![alt text](ECS_2_Tier.png) 
 
 ## 🏗️ Architecture Overview
 
