@@ -16,12 +16,12 @@ module "network" {
   private_subnet_data = [
     {
       cidr              = "10.0.1.0/24"
-      availability_zone = "ap-south-1a"
+      availability_zone = "us-east-1a"
       prefix            = "private"
     },
     {
       cidr              = "10.0.2.0/24"
-      availability_zone = "ap-south-1b"
+      availability_zone = "us-east-1b"
       prefix            = "private"
     }
   ]
@@ -29,12 +29,12 @@ module "network" {
   public_subnet_data = [
     {
       cidr              = "10.0.3.0/24"
-      availability_zone = "ap-south-1a"
+      availability_zone = "us-east-1a"
       prefix            = "public"
     },
     {
       cidr              = "10.0.4.0/24"
-      availability_zone = "ap-south-1b"
+      availability_zone = "us-east-1b"
       prefix            = "public"
     }
   ]
