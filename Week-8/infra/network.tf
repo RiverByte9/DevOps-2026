@@ -1,7 +1,7 @@
 module "network" {
   #source = "https://github.com/RiverByte9/network-module"
   #source = "git::https://github.com/RiverByte9/network-module?ref=v1.0.0"
-  source = "git::https://github.com/RiverByte9/network-module?ref=v1.2.1"
+  source = "git::https://github.com/RiverByte9/network-module?ref=v1.2.2"
 
 
   #version = "v1.0.0"
