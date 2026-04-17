@@ -59,8 +59,8 @@ jobs:
     env:
       ECS_CLUSTER: jan26-bootcamp-devopsdozo-cluster
       ECS_TASK_DEFINITION: jan26-bootcamp-devopsdozo-backend-task
-      ecs_security_group: sg-05f2e60fbbe8bc14e
-      ecs_subnet: subnet-053f9acff255a9284
+      ecs_security_group: sg-008a7e040c11adb7d 
+      ecs_subnet: subnet-0e1c6b33f3e955a81
 
     steps:
       - name: Configure AWS Credentials
